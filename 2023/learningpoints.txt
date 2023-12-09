@@ -1,0 +1,4 @@
+maps/slices etc. are reference types under the hood so no need to pass as reference to funcs
+Go regex does not support many modern PCRE2 stuff such as postive look ahead
+Can define maps outside of functions as vars
+No const maps
