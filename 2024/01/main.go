@@ -3,19 +3,30 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
-	"slices"
 	"strconv"
 	"strings"
 )
 
-type StrArr []string
+type (
+	StrArr []string
+	IntArr []int
+)
 
 func (arr StrArr) Convert() []int {
 	retVal := make([]int, len(arr))
 	for i, v := range arr {
 		retVal[i], _ = strconv.Atoi(v)
+	}
+	return retVal
+}
+
+func CountElement(arr []int, count int) int {
+	retVal := 0
+	for _, v := range arr {
+		if v == count {
+			retVal++
+		}
 	}
 	return retVal
 }
@@ -46,14 +57,12 @@ func main() {
 	leftSide := leftInts.Convert()
 	rightSide := rightInts.Convert()
 
-	slices.Sort(leftSide)
-	slices.Sort(rightSide)
+	total := 0
 
-	totalDistance := 0
-
-	for i := 0; i < len(leftSide); i++ {
-		totalDistance += int(math.Abs(float64(leftSide[i]) - float64(rightSide[i])))
+	for _, v := range leftSide {
+		count := CountElement(rightSide, v)
+		total += v * count
 	}
 
-	fmt.Printf("totalDistance: %v\n", totalDistance)
+	fmt.Printf("total: %v\n", total)
 }
