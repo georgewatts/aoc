@@ -14,18 +14,7 @@ type Mul struct {
 	b int
 }
 
-func main() {
-	inputFile, err := os.Open("input.txt")
-	if err != nil {
-		panic(err)
-	}
-
-	data, _ := io.ReadAll(inputFile)
-	str := string(data)
-
-	re := regexp.MustCompile(`mul\(\d+,\d+\)`)
-	occurences := re.FindAllString(str, -1)
-
+func processMultipliers(occurences []string) int {
 	multipliers := []Mul{}
 
 	for _, v := range occurences {
@@ -42,5 +31,35 @@ func main() {
 		total += m.a * m.b
 	}
 
+	return total
+}
+
+func main() {
+	inputFile, err := os.Open("input.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	data, _ := io.ReadAll(inputFile)
+	str := string(data)
+
+	re := regexp.MustCompile(`mul\(\d+,\d+\)|do\(\)|don\'t\(\)`)
+	occurences := re.FindAllString(str, -1)
+
+	filteredOccurences := []string{}
+	ignoringOccurence := false
+	for _, v := range occurences {
+		if v == "do()" {
+			ignoringOccurence = false
+		} else if v == "don't()" {
+			ignoringOccurence = true
+		} else {
+			if !ignoringOccurence {
+				filteredOccurences = append(filteredOccurences, v)
+			}
+		}
+	}
+
+	total := processMultipliers(filteredOccurences)
 	fmt.Printf("total: %v\n", total)
 }
