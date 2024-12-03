@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"slices"
 	"strconv"
@@ -11,7 +12,7 @@ import (
 
 type StrArr []string
 
-func (arr StrArr) Convert() []int {
+func Convert(arr []string) []int {
 	retVal := make([]int, len(arr))
 	for i, v := range arr {
 		retVal[i], _ = strconv.Atoi(v)
@@ -19,18 +20,20 @@ func (arr StrArr) Convert() []int {
 	return retVal
 }
 
-func processReport(report []int) bool {
-	processed := slices.Compact(report)
-
-	if len(report) != len(processed) {
-		return false
+func Abs(integer int) int {
+	if integer < 0 {
+		return integer * -1
 	}
+	return integer
+}
 
-	ascending := processed[0] < processed[len(processed)-1]
-
-	for i := 1; i < len(processed); i++ {
-		prev := processed[i-1]
-		curr := processed[i]
+func calcValues(report []int, ascending bool) bool {
+	for i := 1; i < len(report); i++ {
+		prev := report[i-1]
+		curr := report[i]
+		if prev == 0 || curr == 0 {
+			panic("oops")
+		}
 		diff := 0
 		if ascending {
 			diff = curr - prev
@@ -46,6 +49,39 @@ func processReport(report []int) bool {
 	return true
 }
 
+func processReport(report []int) bool {
+	// processed := slices.Compact(report)
+	processed := slices.Clone(report)
+
+	// if len(report) != len(processed) {
+	// 	return false
+	// }
+
+	ascending := processed[0] < processed[len(processed)-1]
+
+	result := calcValues(processed, ascending)
+
+	if result {
+		return true
+	}
+
+	if !result {
+		index := 0
+		for index < len(processed) {
+			reportRetry := slices.Clone(processed)
+			reportRetry = slices.Delete(reportRetry, index, index+1)
+			result := calcValues(reportRetry, ascending)
+			if result {
+				return true
+			}
+			index++
+		}
+	}
+
+	log.Println("unsafe", processed)
+	return false
+}
+
 func main() {
 	inputFile, err := os.Open("input.txt")
 	if err != nil {
@@ -54,20 +90,14 @@ func main() {
 
 	scanner := bufio.NewScanner(inputFile)
 
-	scanner.Scan()
-	line := scanner.Text()
-
-	report := StrArr{}
 	data := [][]int{}
 
-	for len(line) != 0 {
-		report = strings.Split(line, " ")
-		convertedReport := report.Convert()
+	for scanner.Scan() {
+		line := scanner.Text()
+		report := strings.Split(line, " ")
+		convertedReport := Convert(report)
 
 		data = append(data, convertedReport)
-
-		scanner.Scan()
-		line = scanner.Text()
 	}
 
 	count := 0
