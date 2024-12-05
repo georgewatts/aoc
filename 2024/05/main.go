@@ -19,7 +19,7 @@ func (r Rules) validatePage(page int, suffix int) bool {
 	return slices.Contains(r[page], suffix)
 }
 
-func (r Rules) validateUpdate(update string) int {
+func (r Rules) validateUpdate(update string) []int {
 	pages := strings.Split(update, ",")
 	pageNumbers := []int{}
 
@@ -32,12 +32,25 @@ func (r Rules) validateUpdate(update string) int {
 		successive := getSucceedingInts(pageNumbers, v)
 		for _, v2 := range successive {
 			if !r.validatePage(v, v2) {
-				return 0
+				return pageNumbers
 			}
 		}
 	}
 
-	return pageNumbers[(len(pageNumbers)-1)/2]
+	return []int{}
+
+	// return pageNumbers[(len(pageNumbers)-1)/2]
+}
+
+func (r Rules) fixUpdate(update []int) int {
+	fixedUpdate := slices.Clone(update)
+	slices.SortFunc(fixedUpdate, func(a int, b int) int {
+		if r.validatePage(b, a) {
+			return 0
+		}
+		return -1
+	})
+	return fixedUpdate[(len(fixedUpdate)-1)/2]
 }
 
 func getPrecedingInts(arr []int, intToFind int) []int {
@@ -57,6 +70,7 @@ func main() {
 	scanner := bufio.NewScanner(inputFile)
 	rules := Rules{}
 
+	invalidUpdates := [][]int{}
 	total := 0
 
 	for scanner.Scan() {
@@ -69,8 +83,15 @@ func main() {
 		}
 
 		if strings.Contains(line, ",") {
-			total += rules.validateUpdate(line)
+			update := rules.validateUpdate(line)
+			if len(update) > 0 {
+				invalidUpdates = append(invalidUpdates, update)
+			}
 		}
+	}
+
+	for _, v := range invalidUpdates {
+		total += rules.fixUpdate(v)
 	}
 
 	fmt.Printf("total: %v\n", total)
